@@ -1,0 +1,33 @@
+{
+  "name": "bitespeed-backend-task-identity-reconciliation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SayujGupta2005/Identity-reconciliation.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/SayujGupta2005/Identity-reconciliation/issues"
+  },
+  "homepage": "https://github.com/SayujGupta2005/Identity-reconciliation#readme",
+  "dependencies": {
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@prisma/config": "^7.4.2",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.3.3",
+    "dotenv": "^17.3.1",
+    "prisma": "^7.4.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
