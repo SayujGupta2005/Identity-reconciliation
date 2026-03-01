@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { PrismaClient } from '@prisma-client/prisma-client';
+import { PrismaClient } from '@prisma/client';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -19,8 +19,8 @@ app.post('/identify', async (req: Request, res: Response) => {
         const directMatches = await prisma.contact.findMany({
             where: {
                 OR: [
-                    { email: email ? String(email) : undefined },
-                    { phoneNumber: phoneNumber ? String(phoneNumber) : undefined }
+                    ...(email ? [{ email: String(email) }] : []),
+                    ...(phoneNumber ? [{ phoneNumber: String(phoneNumber) }] : [])
                 ]
             }
         });
@@ -69,6 +69,10 @@ app.post('/identify', async (req: Request, res: Response) => {
 
         // 5. The oldest contact is our Root Primary [cite: 26]
         const rootPrimary = allRelatedContacts[0];
+
+        if (!rootPrimary) {
+            return res.status(500).json({ error: "Data integrity issue: Expected a primary contact." });
+        }
 
         // 6. Merge other primaries into secondaries if needed [cite: 144]
         const otherPrimaries = allRelatedContacts.filter(c => c.id !== rootPrimary.id && c.linkPrecedence === 'primary');
