@@ -1,10 +1,16 @@
+import "dotenv/config";
 import express, { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from './generated/prisma/client.js';
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+
+const adapter = new PrismaBetterSqlite3({
+    url: process.env.DATABASE_URL || "file:./dev.db",
+});
 
 const app = express();
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ adapter });
 
-app.use(express.json()); // Use JSON body parsing [cite: 37, 228]
+app.use(express.json()); // Use JSON body parsing
 
 app.post('/identify', async (req: Request, res: Response) => {
     const { email, phoneNumber } = req.body;
@@ -37,7 +43,7 @@ app.post('/identify', async (req: Request, res: Response) => {
 
             return res.status(200).json({
                 contact: {
-                    primaryContatctId: newContact.id,
+                    primaryContactId: newContact.id,
                     emails: newContact.email ? [newContact.email] : [],
                     phoneNumbers: newContact.phoneNumber ? [newContact.phoneNumber] : [],
                     secondaryContactIds: []
@@ -46,7 +52,7 @@ app.post('/identify', async (req: Request, res: Response) => {
         }
 
         // 3. Matches found. Find the ultimate "Primary" contacts for all matches.
-        // Secondaries always link directly to a primary[cite: 26]. 
+        // Secondaries always link directly to a primary
         const primaryIds = new Set<number>();
         directMatches.forEach(contact => {
             if (contact.linkPrecedence === 'primary') {
@@ -67,14 +73,14 @@ app.post('/identify', async (req: Request, res: Response) => {
             orderBy: { createdAt: 'asc' } // Oldest first
         });
 
-        // 5. The oldest contact is our Root Primary [cite: 26]
+        // 5. The oldest contact is our Root Primary
         const rootPrimary = allRelatedContacts[0];
 
         if (!rootPrimary) {
             return res.status(500).json({ error: "Data integrity issue: Expected a primary contact." });
         }
 
-        // 6. Merge other primaries into secondaries if needed [cite: 144]
+        // 6. Merge other primaries into secondaries if needed
         const otherPrimaries = allRelatedContacts.filter(c => c.id !== rootPrimary.id && c.linkPrecedence === 'primary');
 
         if (otherPrimaries.length > 0) {
@@ -108,7 +114,7 @@ app.post('/identify', async (req: Request, res: Response) => {
             allRelatedContacts.push(newSecondary); // Add to array for formatting output
         }
 
-        // 8. Re-fetch or format the final response [cite: 44, 46]
+        // 8. Format the final response
         const finalContacts = allRelatedContacts.map(c => c.id === rootPrimary.id ? c : { ...c, linkPrecedence: 'secondary', linkedId: rootPrimary.id });
 
         // Extract unique, non-null emails and phone numbers
@@ -118,7 +124,7 @@ app.post('/identify', async (req: Request, res: Response) => {
 
         return res.status(200).json({
             contact: {
-                primaryContatctId: rootPrimary.id,
+                primaryContactId: rootPrimary.id,
                 emails,
                 phoneNumbers,
                 secondaryContactIds
