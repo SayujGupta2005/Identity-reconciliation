@@ -4,6 +4,16 @@ A backend REST API that identifies and tracks customer identity across multiple 
 
 ---
 
+## 🌐 Live Endpoint
+
+```
+POST https://identity-reconciliation-uhvk.onrender.com/identify
+```
+
+> ⚠️ Hosted on Render free tier — first request after inactivity may take ~30 seconds to wake up.
+
+---
+
 ## 🧠 How It Works
 
 When a customer places an order, they may use different emails or phone numbers. This service links all those contact records together under one **primary** contact, so Bitespeed always knows it's the same person.
